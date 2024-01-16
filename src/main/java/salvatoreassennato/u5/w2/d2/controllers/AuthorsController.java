@@ -1,9 +1,12 @@
 package salvatoreassennato.u5.w2.d2.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import salvatoreassennato.u5.w2.d2.entities.Author;
 import salvatoreassennato.u5.w2.d2.service.AuthorService;
+
+import java.util.List;
 
 // -------------------------------------------- AUTHORS CRUD -----------------------------------------------
 //1) GET http://localhost:3001/authors
@@ -16,4 +19,27 @@ import salvatoreassennato.u5.w2.d2.service.AuthorService;
 public class AuthorsController {
    @Autowired
    private AuthorService authorService;
+
+    @GetMapping
+    public List<Author> getAuthors() {
+        return authorService.getAuthors();
+    }
+    @GetMapping("/{id}")
+    public Author findById(@PathVariable int id) {
+        return authorService.findById(id);
+    }
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public Author saveAuthors(@RequestBody Author body) {
+        return authorService.save(body);
+    }
+    @PutMapping("/{id")
+    public Author findByAndUpdate(@PathVariable int id, @RequestBody Author body) {
+        return this.authorService.findByIdAndUpdate(id, body);
+    }
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void findByIdAndDelete(@PathVariable int id) {
+        this.authorService.findByIdAndDelete(id);
+    }
 }
