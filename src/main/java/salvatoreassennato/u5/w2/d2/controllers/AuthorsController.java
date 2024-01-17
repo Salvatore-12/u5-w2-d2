@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import salvatoreassennato.u5.w2.d2.entities.Author;
-import salvatoreassennato.u5.w2.d2.service.AuthorService;
+import salvatoreassennato.u5.w2.d2.service.AuthorsService;
 
 import java.util.List;
 
@@ -18,28 +18,29 @@ import java.util.List;
 @RequestMapping("/authors")
 public class AuthorsController {
    @Autowired
-   private AuthorService authorService;
+   private AuthorsService authorsService;
 
     @GetMapping
     public List<Author> getAuthors() {
-        return authorService.getAuthors();
+        return authorsService.getAuthors();
     }
+
     @GetMapping("/{id}")
     public Author findById(@PathVariable int id) {
-        return authorService.findById(id);
+        return authorsService.findById(id);
     }
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Author saveAuthors(@RequestBody Author body) {
-        return authorService.save(body);
+        return authorsService.save(body);
     }
-    @PutMapping("/{id")
+    @PutMapping("/{id}")
     public Author findByAndUpdate(@PathVariable int id, @RequestBody Author body) {
-        return this.authorService.findByIdAndUpdate(id, body);
+        return this.authorsService.findByIdAndUpdate(id, body);
     }
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void findByIdAndDelete(@PathVariable int id) {
-        this.authorService.findByIdAndDelete(id);
+        this.authorsService.findByIdAndDelete(id);
     }
 }

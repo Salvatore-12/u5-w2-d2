@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Random;
 
 @Service
-public class AuthorService {
+public class AuthorsService {
     private List<Author> authors=new ArrayList<>();
     //1)metodo per ritornare una lista di autori
     public List<Author> getAuthors(){
@@ -34,6 +34,7 @@ public class AuthorService {
     public Author save(Author body){
         Random rndm= new Random();
         body.setId(rndm.nextInt(1, 1000));
+        body.setAvatar("https://ui-avatars.com/api/?name="+body.getName()+body.getSurname());
         this.authors.add(body);
         return body;
 

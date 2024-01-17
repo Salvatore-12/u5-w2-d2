@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Random;
 
 @Service
-public class BlogService {
+public class BlogPostersService {
     private List<BlogPost> BlogPost = new ArrayList<>();
 
     public List<BlogPost> getAuthor() {
