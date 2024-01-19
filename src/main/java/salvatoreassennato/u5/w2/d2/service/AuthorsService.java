@@ -1,8 +1,15 @@
 package salvatoreassennato.u5.w2.d2.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import salvatoreassennato.u5.w2.d2.entities.Author;
+import salvatoreassennato.u5.w2.d2.exceptions.BadRequestException;
 import salvatoreassennato.u5.w2.d2.exceptions.NotFoundException;
+import salvatoreassennato.u5.w2.d2.repository.AuthorsDAO;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -11,57 +18,44 @@ import java.util.Random;
 
 @Service
 public class AuthorsService {
-    private List<Author> authors=new ArrayList<>();
-    //1)metodo per ritornare una lista di autori
-    public List<Author> getAuthors(){
-        return this.authors;
+    @Autowired
+    private AuthorsDAO authorsDAO;
+
+    //1)metodo per ritornare una lista di autori aggiornato tramite DAO Id
+    public Page<Author> getAuthors(int page,int size,String orderBy){
+        Pageable pageable= PageRequest.of(page,size, Sort.by(orderBy));
+        return authorsDAO.findAll(pageable);
     }
 
-    //2)metodo per cercare un autore tramite id
+    //2)metodo per cercare un autore tramite id aggiornato con DAO
     public Author findById(int id) {
-        Author found = null;
-        for (Author author : this.authors) {
-            if (author.getId()==id) {
-                found = author;
-            }
-        }
-        if (found == null)
-            throw new NotFoundException(id);
-        return found;
+        return authorsDAO.findById(id).orElseThrow(()-> new NotFoundException(id));
     }
 
     //3)medoto per salvare e creare un autore
     public Author save(Author body){
-        Random rndm= new Random();
-        body.setId(rndm.nextInt(1, 1000));
-        body.setAvatar("https://ui-avatars.com/api/?name="+body.getName()+body.getSurname());
-        this.authors.add(body);
-        return body;
+
+        authorsDAO.findByEmail(body.getEmail()).ifPresent(authors -> {
+            throw new BadRequestException("this email " + authors.getEmail() + " is!");
+        });
+        body.setAvatar("https://ui-avatars.com/api/?name=" + body.getName()+body.getSurname());
+        return authorsDAO.save(body);
 
     }
-    //4)metodo per ricercare e modicare tramite id un user
+    //4)metodo per ricercare e modicare tramite id un user aggiornato con il DAO
     public Author findByIdAndUpdate(int id, Author body) {
-        Author found = null;
-        for (Author author : this.authors) {
-            if (author.getId() == id) {
-                found = author;
-                found.setId(id);
-                found.setName(body.getName());
-                found.setSurname(body.getSurname());
-            }
-        }
-        if (found == null)
-            throw new NotFoundException(id);
-        return found;
+        Author found = this.findById(id);
+        found.setName(body.getName());
+        found.setSurname(body.getSurname());
+        found.setEmail(body.getEmail());
+        found.setAvatar(body.getAvatar());
+        return authorsDAO.save(found);
+
+
     }
-    //5)metodo per eliminare un user tramite id
+    //5)metodo per eliminare un autore tramite  DAO
     public void findByIdAndDelete(int id) {
-        Iterator<Author> iterator = this.authors.iterator();
-        while (iterator.hasNext()) {
-            Author current = iterator.next();
-            if (current.getId() == id) {
-                iterator.remove();
-            }
-        }
+        Author found=this.findById(id);
+        authorsDAO.delete(found);
     }
 }

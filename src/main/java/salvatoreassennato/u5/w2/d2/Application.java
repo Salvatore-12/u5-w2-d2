@@ -9,7 +9,7 @@ import java.util.List;
 @SpringBootApplication
 public class Application {
 
-	private static Author[] authorList;
+
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);

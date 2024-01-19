@@ -1,8 +1,16 @@
 package salvatoreassennato.u5.w2.d2.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import salvatoreassennato.u5.w2.d2.entities.Author;
 import salvatoreassennato.u5.w2.d2.entities.BlogPost;
 import salvatoreassennato.u5.w2.d2.exceptions.NotFoundException;
+import salvatoreassennato.u5.w2.d2.payload.BlogPostDTO;
+import salvatoreassennato.u5.w2.d2.repository.BlogPostersDAO;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -11,56 +19,78 @@ import java.util.Random;
 
 @Service
 public class BlogPostersService {
-    private List<BlogPost> BlogPost = new ArrayList<>();
 
-    public List<BlogPost> getAuthor() {
-        return this.BlogPost;
+    @Autowired
+    private BlogPostersDAO blogPostersDAO;
+    @Autowired
+    private AuthorsService authorsService;
+
+    //1)Metodo che ritorna tutti i blogposters tramite il suo DAO
+    public Page<BlogPost> getBlogPosters(int page,int size,String orderBy) {
+        Pageable pageable= PageRequest.of(page,size, Sort.by(orderBy));
+        return blogPostersDAO.findAll(pageable);
     }
 
-    //SECOND METHOD
-    public BlogPost save(BlogPost body) {
-        Random rndm = new Random();
-        body.setId(rndm.nextInt(1, 1000));
-        this.BlogPost.add(body);
-        return body;
-    }
 
+   //2)Metodo per ricercare tramite id con il suo DAO
     public BlogPost findById(int id) {
-        BlogPost found = null;
-        for (BlogPost blogPost : this.BlogPost) {
-            if (blogPost.getId() == id) {
-                found = blogPost;
-            }
-        }
-        if (found == null)
-            throw new NotFoundException(id);
-        return found;
+        return blogPostersDAO.findById(id).orElseThrow(()-> new NotFoundException(id));
     }
 
-    public BlogPost findByIdAndUpdate(int id, BlogPost body) {
-        BlogPost found = null;
-        for (BlogPost blogPost : this.BlogPost) {
-            if (blogPost.getId() == id) {
-                found = blogPost;
-                found.setId(id);
-                found.setCategoria(body.getCategoria());
-                found.setTitolo(body.getTitolo());
-                found.setContenuto(body.getContenuto());
-                found.setMinuti(body.getMinuti());
-                found.setCover(body.getCover());
-            }
+    //3)Metodo per salvare tramite il suo DAO
+    public BlogPost save(BlogPostDTO body) {
+    Integer authorid= body.getAuthorid();
+    Author author=this.authorsService.findById(authorid);
+    BlogPost newBlogPost=new BlogPost();
+    //SETTAGGIO DELL'AUTORE
+    newBlogPost.setAuthor(author);
+    //SETTAGGIO CATEGIORIA
+     newBlogPost.setCategoria(body.getCategoria());
+    //SETTAGGIO TITOLO
+     String titolo;
+        if (body.getTitolo() == null) {
+            titolo = "Nuovo articolo del blog";
+        } else {
+            titolo = body.getTitolo();
         }
-        if (found == null)
-            throw new NotFoundException(id);
-        return found;
+        newBlogPost.setTitolo(titolo);
+    //SETTAGGIO CONTENUTO
+        String contenuto;
+        if (body.getContenuto() == null) {
+            contenuto = "";
+        } else {
+            contenuto = body.getContenuto();
+        }
+    newBlogPost.setContenuto(contenuto);
+     //SETTAGGIO COVER
+        String cover;
+        if (body.getCover() == null) {
+            cover = "https://picsum.photos/200/300";
+        } else {
+            cover = body.getCover();
+        }
+        newBlogPost.setCover(cover);
+        //SETTAGGIO MINUTI
+        int minuti=contenuto.length()/80;
+        newBlogPost.setMinuti(minuti);
+        blogPostersDAO.save(newBlogPost);
+        System.out.println(newBlogPost);
+        return newBlogPost;
+
     }
+    //4)metodo per modificare un post aggiornato con il suo DAO
+    public BlogPost findByIdAndUpdate(int id, BlogPost body) {
+        BlogPost found = this.findById(id);
+                 found.setCategoria(body.getCategoria());
+                 found.setTitolo(body.getTitolo());
+                 found.setContenuto(body.getContenuto());
+                 found.setMinuti(body.getMinuti());
+                 found.setCover(body.getCover());
+        return blogPostersDAO.save(found);
+    }
+    //5)Metodo per cancellare un post tramite Id aggiornato con il DAO
     public void findByIdAndDelete(int id) {
-        Iterator<BlogPost> iterator = this.BlogPost.iterator();
-        while (iterator.hasNext()) {
-            BlogPost current = iterator.next();
-            if (current.getId() == id) {
-                iterator.remove();
-            }
-        }
+      BlogPost found=this.findById(id);
+      blogPostersDAO.delete(found);
     }
 }

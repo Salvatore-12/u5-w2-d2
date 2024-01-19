@@ -1,6 +1,7 @@
 package salvatoreassennato.u5.w2.d2.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import salvatoreassennato.u5.w2.d2.entities.Author;
@@ -19,10 +20,11 @@ import java.util.List;
 public class AuthorsController {
    @Autowired
    private AuthorsService authorsService;
-
     @GetMapping
-    public List<Author> getAuthors() {
-        return authorsService.getAuthors();
+    public Page<Author> getAuthors(@RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(defaultValue = "10") int size,
+                                   @RequestParam(defaultValue = "id") String orderBy) {
+        return authorsService.getAuthors(page,size,orderBy);
     }
 
     @GetMapping("/{id}")
